@@ -9,7 +9,7 @@ import random
 
 MONGO_URI = "mongodb://localhost:27017"
 MONGO_DATABASE = "biolib"
-MONGO_COLLECTION = "taxons"
+MONGO_COLLECTION = "fungi"
 QUEUE_FILE = "./name-scraping/queue.txt"
 
 
@@ -169,13 +169,13 @@ def main():
 			else:
 				c = 0
 				for taxon in collection.aggregate([
-					{"$match": {"to_visit": True, "level": {"$lt": 130}}},
-					{"$lookup": {"from": "taxons", "localField": "_id", "foreignField": "parent", "as": "docs"}},
-					{"$addFields": {"subtaxons": {"$size": "$docs"}}},
-					{"$project": {"docs": 0}}, {"$sort": {"subtaxons": 1}}
+					{"$match": {"to_visit": True, "level": {"$lt": 150}}}
 				]):
+					url = URL_TAXONTREE.format(taxon_id=taxon["_id"])
+					if taxon["level"] >= 110:
+						url = url + "?count=100&treetaxcat=150"
 					c += 1
-					queue.append(URL_TAXONTREE.format(taxon_id=taxon["_id"]) + "?count=100&treetaxcat=150")
+					queue.append(url)
 				print(f"Added {c} URLs to queue")
 				if c == 0:
 					return
